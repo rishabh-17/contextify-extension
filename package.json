@@ -1,6 +1,6 @@
 {
-  "name": "contextify-ai",
-  "displayName": "Contextify ai",
+  "name": "contextify",
+  "displayName": "Contextify",
   "version": "0.0.1",
   "description": "Search with us",
   "author": "Plasmo Corp. <foss@plasmo.com>",
@@ -29,7 +29,6 @@
       "https://*/*"
     ],
     "permissions": [
-      "scripting",
       "contextMenus",
       "sidePanel"
     ]

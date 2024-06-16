@@ -4,12 +4,14 @@ import "./style.css"
 
 import { Storage } from "@plasmohq/storage"
 
+import logo from "./assets/icon.png"
+
 const storage = new Storage()
 
 function IndexPopup() {
   const [key, setKey] = useState()
   const [input, setInput] = useState("")
-  const [type, setType] = useState(1)
+  const [type, setType] = useState(0)
   const [disableImage, setDisableImage] = useState(false)
   const [disableText, setDisableText] = useState(false)
   const isKey = async () => {
@@ -31,7 +33,10 @@ function IndexPopup() {
 
   return !key ? (
     <div className="mainContainer">
-      <p>Contextify AI</p>
+      <div style={{ display: "flex", alignItems: "center" }}>
+        <img src={logo} height={40} width={40} alt="" />
+        <p>Contextify</p>
+      </div>
       <hr />
       <h3>Welcome!</h3>
       <p>Please Provide your Secret key.</p>
@@ -68,7 +73,10 @@ function IndexPopup() {
     </div>
   ) : (
     <div className="mainContainer">
-      <p>Contextify AI</p>
+      <div style={{ display: "flex", alignItems: "center" }}>
+        <img src={logo} height={40} width={40} alt="" />
+        <p>Contextify</p>
+      </div>
       <hr />
       <h2>Quick Settings</h2>
       <div className="voiceSettings">
@@ -79,67 +87,29 @@ function IndexPopup() {
           <div
             onClick={() => setType(1)}
             className={`${type === 1 ? "active" : "inactive"}`}>
-            normal
+            Professional
           </div>
           <div
             onClick={() => setType(2)}
             className={`${type === 2 ? "active" : "inactive"}`}>
-            sensetive
+            Cheeky
           </div>
           <div
             onClick={() => setType(3)}
             className={`${type === 3 ? "active" : "inactive"}`}>
-            sensetive
+            Conversational
           </div>
           <div
             onClick={() => setType(4)}
             className={`${type === 4 ? "active" : "inactive"}`}>
-            sensetive
+            Exicted
           </div>
           <div
             onClick={() => setType(5)}
             className={`${type === 5 ? "active" : "inactive"}`}>
-            sensetive
-          </div>
-          <div
-            onClick={() => setType(6)}
-            className={`${type === 6 ? "active" : "inactive"}`}>
-            sensetive
+            Kid-friendly
           </div>
         </div>
-      </div>
-      <div className="switchSettings">
-        <p className="switch-label">Disable images</p>
-        <label className="switch">
-          <input
-            type="checkbox"
-            checked={disableImage}
-            onChange={(e) => setDisableImage(e.target.checked)}
-          />
-          <span className="slider round"></span>
-        </label>
-      </div>
-      <div className="switchSettings">
-        <p className="switch-label">Disable text</p>
-        <label className="switch">
-          <input
-            type="checkbox"
-            checked={disableText}
-            onChange={(e) => setDisableText(e.target.checked)}
-          />
-          <span className="slider round"></span>
-        </label>
-      </div>
-      <div className="switchSettings">
-        <p className="switch-label">Extra </p>
-        <label className="switch">
-          <input
-            type="checkbox"
-            checked={disableImage}
-            onChange={(e) => setDisableImage(e.target.checked)}
-          />
-          <span className="slider round"></span>
-        </label>
       </div>
       <hr />
       <div className="premium">
@@ -147,8 +117,24 @@ function IndexPopup() {
         <button className="unlock">Unlock Premium</button>
       </div>
       <hr />
-      <div className="footer">
-        <a href="">Dashboard</a>
+      <div
+        className="premium"
+        style={{
+          backgroundColor: "#4b0170",
+          display: "flex",
+          justifyContent: "center"
+        }}>
+        <a
+          href="https://www.contextify.info/dashboard"
+          style={{
+            color: "white",
+            textDecoration: "none",
+            backgroundColor: "#4b0170",
+            fontWeight: "bold"
+          }}
+          target="_blank">
+          Dashboard
+        </a>
       </div>
     </div>
   )

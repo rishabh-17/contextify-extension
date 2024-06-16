@@ -6,7 +6,9 @@ import cross from "./assets/cross.png"
 import dashboard from "./assets/dashboard.png"
 import diamond from "./assets/diamond.png"
 import gear from "./assets/gear.png"
+import logo from "./assets/icon.png"
 import save from "./assets/save.png"
+import speak from "./assets/speak.png"
 
 import "./style.css"
 
@@ -21,51 +23,91 @@ function IndexSidePanel() {
   const [searchedText, setSearchedText] = useState("")
   const [isImg, setIsImg] = useState(false)
   const [result, setResult] = useState("")
+  const [voice, setVoice] = useState(1)
+  const [voices, setVoices] = useState([])
 
   chrome.runtime.onMessage.addListener(
     (message, messageSender, sendResponse) => {
-      // console.log(message)
+      console.log(message)
       if (message.img) {
         setIsImg(true)
         setSearchedText(message.url)
       } else {
+        setIsImg(false)
         setSearchedText(message.msg)
       }
     }
   )
 
+  const handleVoiceChange = async (event) => {
+    setVoice(event.target.value)
+    await storage.set("voice", event.target.value)
+  }
+
+  const fetchVoices = async () => {
+    const voices = speechSynthesis.getVoices()
+    setVoices(voices)
+    console.log(voices)
+  }
+
+  useEffect(() => {
+    setTimeout(() => {
+      fetchVoices()
+    }, 2000)
+  }, [])
+
+  const customNames = [
+    "Alice",
+    "Bob",
+    "Charlie",
+    "Diana",
+    "Eve",
+    "Frank",
+    "Grace",
+    "Hank",
+    "Ivy",
+    "Jack"
+    // Add more names if needed
+  ]
+
   async function contextify(url = "", data = {}) {
     try {
+      console.log("first")
+      setResult("")
       const response = await fetch(url, {
         method: "POST",
-        // mode: "cors",
-        // cache: "no-cache",
-        // credentials: "same-origin",
         headers: {
           "Content-Type": "application/json",
           secret: await storage.get("key")
         },
-        // redirect: "follow",
-        // referrerPolicy: "no-referrer",
         body: JSON.stringify(data)
       })
       const result = await response.json()
-      setResult(result.data)
+      setResult(result?.data?.replaceAll("#", ""))
+      if (result?.err) {
+        setResult(result.err)
+      }
     } catch (error) {
       console.error(error)
       setResult("error something went wrong, please try again later")
     }
   }
 
+  const getVoice = async () => {
+    const voice = await storage.get("voice")
+    setVoice(voice)
+  }
+
   useEffect(() => {
-    // storage.get("key").then((key) => {
-    //   console.log(key)
-    // })
+    getVoice()
+  }, [])
+
+  useEffect(() => {
     if (searchedText) {
-      contextify(
-        "https://contextify-ai-dev.onrender.com/api/context/contextify",
-        { text: searchedText, isImg: isImg }
-      )
+      contextify("https://www.contextify.info/api/context/contextify", {
+        text: searchedText,
+        isImg: isImg
+      })
     }
   }, [searchedText])
 
@@ -73,18 +115,13 @@ function IndexSidePanel() {
     if (result) {
       try {
         const response = await fetch(
-          "https://contextify-ai-dev.onrender.com/api/context/save",
+          "https://www.contextify.info/api/context/save",
           {
             method: "POST",
-            // mode: "cors",
-            // cache: "no-cache",
-            // credentials: "same-origin",
             headers: {
               "Content-Type": "application/json",
               secret: await storage.get("key")
             },
-            // redirect: "follow",
-            // referrerPolicy: "no-referrer",
             body: JSON.stringify({
               question: searchedText,
               answer: result,
@@ -97,8 +134,19 @@ function IndexSidePanel() {
         setOpenModal(false)
       } catch (error) {
         console.log(error)
-        // setResult("error something went wrong, please try again later")
+        setResult("error something went wrong, please try again later")
       }
+    }
+  }
+
+  const handleSpeech = () => {
+    if (result) {
+      const synth = window.speechSynthesis
+      const utterance = new SpeechSynthesisUtterance(result)
+      const voices = speechSynthesis.getVoices()
+      const selectedVoice = voice || 1
+      utterance.voice = voices[selectedVoice]
+      synth.speak(utterance)
     }
   }
 
@@ -145,7 +193,10 @@ function IndexSidePanel() {
             </div>
           </div>
         )}
-        <p className="logo-label">Contextify AI</p>
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <img src={logo} height={40} width={40} alt="" />
+          <p className="logo-label">Contextify</p>
+        </div>
         <hr />
         {!setting ? (
           <>
@@ -216,103 +267,73 @@ function IndexSidePanel() {
               </p>
             </div>
             <hr />
-
-            <div className="main-body">
-              <div className="switchSettings" style={{ padding: "0 10px" }}>
-                <p className="switch-label2">Disable images</p>
-                <label className="switch">
-                  <input
-                    type="checkbox"
-                    // checked={disableImage}
-                    // onChange={(e) => setDisableImage(e.target.checked)}
-                  />
-                  <span className="slider round"></span>
-                </label>
+            <div>
+              <div className="main-body">
+                <section style={{ padding: "10px 1rem " }}>
+                  <label
+                    style={{
+                      fontSize: "1rem",
+                      fontWeight: "bold",
+                      marginBottom: "10px"
+                    }}
+                    htmlFor="voiceType">
+                    Select Voice:
+                  </label>
+                  <select
+                    style={{
+                      width: "100%",
+                      padding: ".5rem",
+                      border: "1px solid gray",
+                      borderRadius: ".5rem",
+                      marginTop: "10px"
+                    }}
+                    id="voiceType"
+                    value={voice}
+                    onChange={handleVoiceChange}>
+                    {voices?.map((voice, i) => (
+                      <option key={voice.voiceURI} value={i}>
+                        {customNames[i] || voice.name}
+                      </option>
+                    ))}
+                  </select>
+                </section>
+                <hr />
               </div>
-              <hr />
-              <div className="switchSettings" style={{ padding: "0 10px" }}>
-                <p className="switch-label2">Disable images</p>
-                <label className="switch">
-                  <input
-                    type="checkbox"
-                    // checked={disableImage}
-                    // onChange={(e) => setDisableImage(e.target.checked)}
-                  />
-                  <span className="slider round"></span>
-                </label>
+              <div className="unlock-container">
+                <a
+                  href="https://www.contextify.info/subscription"
+                  target="_blank"
+                  className="unlock2">
+                  <div className="diamond">
+                    <img src={diamond} width={20} alt="" />
+                  </div>
+                  Unlock Premium
+                </a>
               </div>
-              <hr />
-              <div className="switchSettings" style={{ padding: "0 10px" }}>
-                <p className="switch-label2">Disable images</p>
-                <label className="switch">
-                  <input
-                    type="checkbox"
-                    // checked={disableImage}
-                    // onChange={(e) => setDisableImage(e.target.checked)}
-                  />
-                  <span className="slider round"></span>
-                </label>
-              </div>
-              <hr />
-              <div className="switchSettings" style={{ padding: "0 10px" }}>
-                <p className="switch-label2">Disable images</p>
-                <label className="switch">
-                  <input
-                    type="checkbox"
-                    // checked={disableImage}
-                    // onChange={(e) => setDisableImage(e.target.checked)}
-                  />
-                  <span className="slider round"></span>
-                </label>
-              </div>
-              <hr />
-              <div className="switchSettings" style={{ padding: "0 10px" }}>
-                <p className="switch-label2">Disable images</p>
-                <label className="switch">
-                  <input
-                    type="checkbox"
-                    // checked={disableImage}
-                    // onChange={(e) => setDisableImage(e.target.checked)}
-                  />
-                  <span className="slider round"></span>
-                </label>
-              </div>
-              <hr />
-              <div className="switchSettings" style={{ padding: "0 10px" }}>
-                <p className="switch-label2">Disable images</p>
-                <label className="switch">
-                  <input
-                    type="checkbox"
-                    // checked={disableImage}
-                    // onChange={(e) => setDisableImage(e.target.checked)}
-                  />
-                  <span className="slider round"></span>
-                </label>
-              </div>
-              <hr />
-            </div>
-            <div className="unlock-container">
-              <button className="unlock2">
-                <div className="diamond">
-                  <img src={diamond} width={20} alt="" />
-                </div>
-                Unlock Premium
-              </button>
             </div>
           </>
         )}
         <footer className="footer">
-          <div className="footer-button">
-            <img src={add} width={20} height={20} alt="" /> New Context
+          <div className="footer-button" onClick={handleSpeech}>
+            <img src={speak} width={20} height={20} alt="" /> Voice
           </div>
           <div className="footer-button">
             <img src={dashboard} width={20} height={20} alt="" />
-            Dashboard
+            <a
+              style={{ textDecoration: "none" }}
+              href="https://www.contextify.info/dashboard"
+              target="_blank"
+              rel="noopener noreferrer">
+              Dashboard
+            </a>
           </div>
         </footer>
         <p
           style={{ fontSize: "12px", textAlign: "center", fontWeight: "bold" }}>
-          Powered By: Contextify.ai
+          Powered By:{" "}
+          <a href="https://www.contextify.info" target="_blank">
+            contextify.info
+          </a>
         </p>
       </div>
     </>
