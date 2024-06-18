@@ -263,6 +263,7 @@ function IndexSidePanel() {
                 className="textarea"
                 placeholder="loading please wait...."
                 value={result}
+                style={{ backgroundColor: "#f7f0fc" }}
                 onChange={(e) => setResult(e.target.value)}
                 disabled={!!!result}></textarea>
             </div>
