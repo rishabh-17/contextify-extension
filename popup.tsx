@@ -81,7 +81,7 @@ function IndexPopup() {
       <h2>Quick Settings</h2>
       <div className="voiceSettings">
         <h3 style={{ marginBottom: 0 }}>Choose Voice</h3>
-        <p style={{ marginTop: 0 }}>setup your prefered tone</p>
+        <p style={{ marginTop: 0 }}>setup your Preferred tone</p>
 
         <div className="typeContainer">
           <div
@@ -136,6 +136,10 @@ function IndexPopup() {
           Dashboard
         </a>
       </div>
+      <p>
+        To use the Contextify, highlight the text or right-click directly on an
+        image and select "Contextify It” from the menu.
+      </p>
     </div>
   )
 }

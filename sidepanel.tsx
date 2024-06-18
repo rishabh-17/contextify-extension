@@ -2,11 +2,14 @@ import { useEffect, useState } from "react"
 
 import add from "./assets/add.png"
 import arrow from "./assets/arrow.png"
+import cancel from "./assets/cancel.png"
 import cross from "./assets/cross.png"
 import dashboard from "./assets/dashboard.png"
 import diamond from "./assets/diamond.png"
 import gear from "./assets/gear.png"
 import logo from "./assets/icon.png"
+import pause from "./assets/pause.png"
+import play from "./assets/play.png"
 import save from "./assets/save.png"
 import speak from "./assets/speak.png"
 
@@ -25,19 +28,20 @@ function IndexSidePanel() {
   const [result, setResult] = useState("")
   const [voice, setVoice] = useState(1)
   const [voices, setVoices] = useState([])
+  const [speechSynthesisInstance, setSpeechSynthesisInstance] = useState(null)
+  const [isSpeaking, setIsSpeaking] = useState(false)
+  const [isPaused, setIsPaused] = useState(false)
 
-  chrome.runtime.onMessage.addListener(
-    (message, messageSender, sendResponse) => {
-      console.log(message)
-      if (message.img) {
-        setIsImg(true)
-        setSearchedText(message.url)
-      } else {
-        setIsImg(false)
-        setSearchedText(message.msg)
-      }
+  chrome.runtime.onMessage.addListener((message) => {
+    console.log(message)
+    if (message.img) {
+      setIsImg(true)
+      setSearchedText(message.url)
+    } else {
+      setIsImg(false)
+      setSearchedText(message.msg)
     }
-  )
+  })
 
   const handleVoiceChange = async (event) => {
     setVoice(event.target.value)
@@ -70,10 +74,48 @@ function IndexSidePanel() {
     // Add more names if needed
   ]
 
+  const handleSpeech = () => {
+    if (result) {
+      const synth = window.speechSynthesis
+      const utterance = new SpeechSynthesisUtterance(result)
+      const voices = speechSynthesis.getVoices()
+      const selectedVoice = voice || 1
+      utterance.voice = voices[selectedVoice]
+      synth.speak(utterance)
+      setSpeechSynthesisInstance(synth)
+      setIsSpeaking(true)
+      setIsPaused(false)
+    }
+  }
+
+  const handlePause = () => {
+    if (speechSynthesisInstance && isSpeaking) {
+      speechSynthesisInstance.pause()
+      setIsPaused(true)
+    }
+  }
+
+  const handleResume = () => {
+    if (speechSynthesisInstance && isPaused) {
+      speechSynthesisInstance.resume()
+      setIsPaused(false)
+    }
+  }
+
+  const handleCancel = () => {
+    if (speechSynthesisInstance) {
+      speechSynthesisInstance.cancel()
+      setIsSpeaking(false)
+      setIsPaused(false)
+    }
+  }
   async function contextify(url = "", data = {}) {
     try {
       console.log("first")
       setResult("")
+      setIsPaused(false)
+      setIsSpeaking(false)
+      handleCancel()
       const response = await fetch(url, {
         method: "POST",
         headers: {
@@ -139,17 +181,6 @@ function IndexSidePanel() {
     }
   }
 
-  const handleSpeech = () => {
-    if (result) {
-      const synth = window.speechSynthesis
-      const utterance = new SpeechSynthesisUtterance(result)
-      const voices = speechSynthesis.getVoices()
-      const selectedVoice = voice || 1
-      utterance.voice = voices[selectedVoice]
-      synth.speak(utterance)
-    }
-  }
-
   return searchedText ? (
     <>
       <div className="panel-container">
@@ -165,7 +196,7 @@ function IndexSidePanel() {
               </div>
               <h3 style={{ marginBottom: 0 }}>Choose Type</h3>
               <p style={{ marginTop: 0 }}>
-                select your prefered note type to save
+                select your preferred note type to save
               </p>
 
               <div className="typeContainer">
@@ -182,7 +213,7 @@ function IndexSidePanel() {
                 <div
                   onClick={() => setType(3)}
                   className={`${type === 3 ? "active" : "inactive"}`}>
-                  Future Exploaration
+                  Future Exploration
                 </div>
               </div>
             </div>
@@ -228,16 +259,6 @@ function IndexSidePanel() {
               />
             </div>
             <div className="main-body">
-              {/* <div className="options">
-          <img
-            src={save}
-            alt=""
-            width={20}
-            height={20}
-            style={{ marginRight: 8, marginBottom: 4 }}
-          />
-        
-        </div> */}
               <textarea
                 className="textarea"
                 placeholder="loading please wait...."
@@ -314,8 +335,39 @@ function IndexSidePanel() {
           </>
         )}
         <footer className="footer">
-          <div className="footer-button" onClick={handleSpeech}>
-            <img src={speak} width={20} height={20} alt="" /> Voice
+          {!isSpeaking && !isPaused && (
+            <div className="footer-button" onClick={handleSpeech}>
+              <img src={speak} width={20} height={20} alt="" /> Voice
+            </div>
+          )}
+          <div className="footer-button">
+            {isSpeaking && !isPaused && (
+              <img
+                src={pause}
+                width={20}
+                height={20}
+                alt=""
+                onClick={handlePause}
+              />
+            )}
+            {isPaused && (
+              <img
+                src={play}
+                width={20}
+                height={20}
+                onClick={handleResume}
+                alt=""
+              />
+            )}
+            {(isSpeaking || isPaused) && (
+              <img
+                src={cancel}
+                width={20}
+                height={20}
+                onClick={handleCancel}
+                alt=""
+              />
+            )}
           </div>
           <div className="footer-button">
             <img src={dashboard} width={20} height={20} alt="" />
