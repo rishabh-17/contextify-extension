@@ -58,7 +58,7 @@ function IndexSidePanel() {
     setTimeout(() => {
       fetchVoices()
     }, 2000)
-  }, [])
+  }, [setting])
 
   const customNames = [
     "Alice",
