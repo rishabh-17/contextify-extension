@@ -62,13 +62,14 @@ function IndexPopup() {
           margin: "10px 0"
         }}>
         Don't have a key?{" "}
-        <span
+        <a
+          href="https://www.contextify.info"
           style={{
             color: "#4b0170",
             textDecoration: "underline blue"
           }}>
           get one here
-        </span>
+        </a>
       </p>
     </div>
   ) : (
