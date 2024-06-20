@@ -64,6 +64,7 @@ function IndexPopup() {
         Don't have a key?{" "}
         <a
           href="https://www.contextify.info"
+          target="_blank"
           style={{
             color: "#4b0170",
             textDecoration: "underline blue"
